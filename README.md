@@ -1,42 +1,48 @@
-# Electric Vehicle Population Data Cleaning and Transformation (SQL)
+# Electric Vehicle Population Data: End-to-End SQL Engineering & Power BI Analytics
+
+![EV Dashboard Preview](Screenshot (68).png)
 
 ## Project Overview
-This project focuses entirely on data engineering, data quality auditing, and structural transformation using SQL. The dataset contains comprehensive records of Electric Vehicles (EVs) and Plug-in Hybrid Electric Vehicles (PHEVs), tracking technical specifications, geographic distribution, and logistical indicators.
+This project establishes a robust end-to-end data pipeline, tracking the architectural isolation and structural transformation of an extensive Electric Vehicle (EV) dataset in SQL, concluding with an interactive executive dashboard in Power BI. 
 
-The goal of this project was to take an unpolished production dataset and apply rigorous data cleaning frameworks to guarantee data integrity before it ever hits an enterprise data warehouse or business intelligence layer.
+The core objective was to simulate an enterprise-level data workflow: taking a massive, unpolished open-source production dataset, executing rigorous data quality auditing and imputation frameworks via a decoupled staging layer, and passing the optimized data downstream for business intelligence reporting.
 
-* **Dataset Source:** [Washington State Department of Licensing (Open Data)](https://catalog.data.gov/dataset/electric-vehicle-population-data)
-
----
-
-## Data Cleaning and Transformation Framework
-
-The project was executed across four structured operational stages to isolate raw data from the transformation engine and systematically fix quality issues.
-
-### Stage 1: Architectural Isolation (Staging)
-To adhere to standard data warehouse safety principles, the original data layer was kept entirely pristine and untouched. A dedicated, decoupled staging table was created to run all structural changes:
-* Created `vehicle_population_staging` as an independent working layer.
-
-### Stage 2: Comprehensive Duplication Auditing
-A high-integrity deduplication audit was executed across all core transactional and machine-level attributes (including VINs, Department of Licensing IDs, and exact geographic markers):
-* Applied an advanced window function using `ROW_NUMBER() OVER (PARTITION BY ...)` to flag matching records across the entire composite primary column key.
-* Verified that the dataset maintained zero duplicate rows, confirming transaction-level uniqueness.
-
-### Stage 3: Data Standardization and Normalization
-Text fields and categorical attributes were cleaned to eliminate typos, casing errors, and regional inconsistencies that break downstream analytical models:
-* Handled structural text formatting across state names and county attributes.
-* Standardized state regional mappings using conditional updates (e.g., explicitly ensuring standard text compliance for geographic attributes across Washington, California, and out-of-state entities).
-
-### Stage 4: Strategic Null and Missing Value Imputation
-Instead of dropping rows with missing values—which would destroy aggregate volume counts and skew global analytics—empty fields and `NULL` values were handled with custom business logic:
-* Imputed missing geographic attributes, cities, and postal codes to a standardized `'Unknown'` flag.
-* Handled missing legislative districts by standardizing them into an appropriate operational placeholder.
-* Standardized missing or unlinked utility providers to `'Non-WA'` or general defaults to preserve regional operational metrics.
+* **Dataset Source:** Washington State Department of Licensing (Open Data Initiative)
+* **Dataset Volume:** 150,000+ records tracking VIN metrics, geographic distribution, and technical specs.
+* **Core Toolkit:** PostgreSQL (Staging environment & structural manipulation), Power BI Desktop (Data modeling & UI design)
 
 ---
 
-## Core SQL Skills Demonstrated
-* Data Architecture Safety: Isolating raw operational layers from the active transformation environment using staging engines.
-* Quality Assurance Auditing: Writing advanced window functions (`ROW_NUMBER`) to check database rows for duplicate anomalies.
-* Conditional Logic Mutations: Utilizing `CASE WHEN` statements, string operations, and independent column updates to normalize data fields.
-* Missing Value Management: Applying column modifications and precise data imputation to maintain total row volume while removing data noise.
+## Phase 1: Architectural Isolation & Data Cleaning (SQL)
+
+To safeguard production data and adhere to database engineering best practices, the raw source layer was kept entirely pristine. All cleaning operations were isolated inside a dedicated working layer named `vehicle_population_staging`.
+
+### 1. High-Integrity Duplication Auditing
+Before manipulating any records, a comprehensive deduplication audit was implemented across the dataset's core transactional and machine-level attributes (including partial VINs, Department of Licensing IDs, and distinct regional coordinates). 
+* **Logic:** Utilized a window function `ROW_NUMBER() OVER (PARTITION BY ...)` across the composite primary key attributes to isolate overlapping records.
+* **Outcome:** Verified transaction-level uniqueness across the entire dataset, ensuring zero aggregate distortion during downstream counts.
+
+### 2. Standardization and Text Normalization
+Categorical variables and structural text fields were audited to eliminate trailing whitespaces, case inconsistencies, and formatting errors that frequently corrupt analytical group-by models:
+* Standardized text formats for state regional identifiers and county listings.
+* Executed conditional mutation updates to map geographical strings uniformly across out-of-state and in-state records.
+
+### 3. Strategic Null and Missing Value Imputation
+Dropping missing rows entirely would discard critical historical volume and skew macro market metrics. Instead, structural logic was applied to preserve total row integrity while removing data noise:
+* Imputed unlinked or empty geographic fields, cities, and postal codes to a standardized `'Unknown'` string flag.
+* Handled missing legislative district entries by converting them into appropriate operational placeholders.
+* Standardized missing utility provider allocations to `'Non-WA'` or general defaults based on geographic location, preserving the dataset's overall baseline count of 150,482 rows.
+
+---
+
+## Phase 2: Interactive Executive Reporting (Power BI)
+
+Once optimized via SQL, the dataset was connected downstream to Power BI. Because the heavy lifting and structural transformation were already handled at the database level, the Power Query schema remained lightweight, high-performing, and built entirely for analytics.
+
+### Key Analytical Deliverables & Visual Architecture
+* **Executive KPI Cards:** Positioned prominently on the left panel to provide immediate situational context, breaking down total marketplace scale: **150,482 Total EVs**, **37 Manufacturers**, and **127 Distinct Car Models**.
+* **Adoption Trend Engine:** A clean timeline chart tracing the velocity of EV adoption over time (1997–2024), effectively visualizing market acceleration patterns.
+* **MSRP Distribution Framework:** Rather than using a cluttered, unaggregated price chart, financial metrics were categorized into clean corporate price brackets (*Lower than 50k*, *Above 50k*, etc.) via a structured matrix view to immediately pinpoint market pricing tiers.
+* **Technical Range Profiling:** A comparative horizontal bar chart evaluating the average electric range variation across vehicle types, showing Battery Electric Vehicles (BEVs) leading at an average of **78.61 miles** vs. Plug-in Hybrid Electric Vehicles (PHEVs) at **30.66 miles**.
+* **Geographic Density Mapping:** Integrated an interactive, color-coded geographic map component detailing the density and volume concentration of active vehicles by state and county bounds.
+* **Dynamic Filtering Controls:** Implemented responsive slicers for *County*, *Make*, *Model*, and *Model Year*, allowing end-users to dynamically slice the entire canvas and isolate specific localized trends instantly.
